@@ -1,1 +1,9 @@
-# XL Docker containers
+= XL Docker containers
+
+== Building the images
+To build the image, execute:
+
+[source,shell]
+----
+$ docker build --build-arg XLR_VERSION=<version> -f rhel7-atomic/Dockerfile src/buildContext
+----
