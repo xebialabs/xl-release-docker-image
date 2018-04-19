@@ -17,6 +17,10 @@ function xlr_copy_extensions {
 }
 
 function xlr_generate_keystore {
+    if [[ ! -d ${BOOTSTRAP_DIR}/conf ]]; then
+        mkdir ${BOOTSTRAP_DIR}/conf
+    fi
+
     if [[ ! -e ${BOOTSTRAP_DIR}/conf/repository-keystore.jceks ]]; then
         echo "Generating random keystore"
         keytool -genseckey -alias deployit-passsword-key -keyalg aes -keysize 128 -keypass "deployit" -keystore ${BOOTSTRAP_DIR}/conf/repository-keystore.jceks -storetype jceks -storepass "docker"
