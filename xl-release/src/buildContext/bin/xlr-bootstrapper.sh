@@ -30,7 +30,7 @@ function xlr_generate_keystore {
 }
 
 function xlr_copy_bootstrap_conf {
-    FILES=( "repository-keystore.jceks" "logback.xml" "security.policy", "xl-release.policy" "deployit-defaults.properties" "xl-release-security.xml" "keystore.jks" "xl-release-server.conf" )
+    FILES=( "repository-keystore.jceks" "logback.xml" "security.policy", "xl-release.policy" "deployit-defaults.properties" "xl-release-security.xml" "keystore.jks" "xl-release-server.conf" "xl-release-license.lic" )
     for i in "${FILES[@]}"; do
         if [[ -e ${BOOTSTRAP_DIR}/conf/$i ]]; then
             echo "Copying $i to installation..."
