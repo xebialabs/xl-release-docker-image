@@ -44,8 +44,8 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
         - name: xlr-bootstrap
-          hostPath:
-            path: /xlr-bootstrap
+          persistentVolumeClaim:
+            claimName: {{ template "xl-release.fullname" . }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
