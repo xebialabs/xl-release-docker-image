@@ -11,7 +11,8 @@ function xlr_copy_extensions {
     for i in "${DIRS[@]}"; do
         if [[ -d ${BOOTSTRAP_DIR}/$i ]]; then
             echo "Copying $i to installation..."
-            cp -fr ${BOOTSTRAP_DIR}/$i ${APP_HOME}/$i
+            cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
+            # N.B.: Does not copy hidden files!
         fi
     done
 }
