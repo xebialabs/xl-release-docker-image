@@ -30,6 +30,8 @@ spec:
           volumeMounts:
             - name: xlr-bootstrap
               mountPath: /opt/xl-release/xlr-bootstrap
+            - name: xlr-data
+              mountPath: /opt/xl-release/xlr-data
           livenessProbe:
             httpGet:
               path: /
@@ -45,7 +47,10 @@ spec:
       volumes:
         - name: xlr-bootstrap
           persistentVolumeClaim:
-            claimName: {{ template "xl-release.fullname" . }}
+            claimName: {{ template "xl-release.fullname" . }}-bootstrap
+        - name: xlr-data
+          persistentVolumeClaim:
+            claimName: {{ template "xl-release.fullname" . }}-data
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
