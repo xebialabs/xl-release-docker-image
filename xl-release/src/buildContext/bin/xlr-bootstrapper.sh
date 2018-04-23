@@ -35,7 +35,7 @@ function xlr_copy_bootstrap_conf {
     for i in "${FILES[@]}"; do
         if [[ -e ${BOOTSTRAP_DIR}/conf/$i ]]; then
             echo "Copying $i to installation..."
-            cp ${BOOTSTRAP_DIR}/conf/$i ${APP_HOME}/conf
+            cp -f ${BOOTSTRAP_DIR}/conf/$i ${APP_HOME}/conf
         fi
     done
 }
