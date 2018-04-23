@@ -6,17 +6,6 @@ echo "APP_ROOT=${APP_ROOT}"
 echo "BOOTSTRAP_DIR=${BOOTSTRAP_DIR}"
 echo "DATA_DIR=${DATA_DIR}"
 
-function xlr_copy_extensions {
-    DIRS=( "plugins" "hotfix" "ext" )
-    for i in "${DIRS[@]}"; do
-        if [[ -d ${BOOTSTRAP_DIR}/$i ]]; then
-            echo "Copying $i to installation..."
-            cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
-            # N.B.: Does not copy hidden files!
-        fi
-    done
-}
-
 function xlr_generate_keystore {
     if [[ ! -d ${BOOTSTRAP_DIR}/conf ]]; then
         mkdir ${BOOTSTRAP_DIR}/conf
@@ -28,6 +17,17 @@ function xlr_generate_keystore {
         cp /tmp/templates/xl-release-server.conf ${BOOTSTRAP_DIR}/conf
         echo "repository.keystore.password=docker" >> ${BOOTSTRAP_DIR}/conf/xl-release-server.conf
     fi
+}
+
+function xlr_copy_extensions {
+    DIRS=( "plugins" "hotfix" "ext" )
+    for i in "${DIRS[@]}"; do
+        if [[ -d ${BOOTSTRAP_DIR}/$i ]]; then
+            echo "Copying $i to installation..."
+            cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
+            # N.B.: Does not copy hidden files!
+        fi
+    done
 }
 
 function xlr_copy_bootstrap_conf {
@@ -88,8 +88,8 @@ function xlr_configure {
     fi
 }
 
-xlr_copy_extensions
 xlr_generate_keystore
+xlr_copy_extensions
 xlr_copy_bootstrap_conf
 xlr_configure
 
