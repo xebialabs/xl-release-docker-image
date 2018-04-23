@@ -6,6 +6,17 @@ echo "APP_ROOT=${APP_ROOT}"
 echo "BOOTSTRAP_DIR=${BOOTSTRAP_DIR}"
 echo "DATA_DIR=${DATA_DIR}"
 
+function xlr_copy_extensions {
+    DIRS=( "plugins" "hotfix" "ext" )
+    for i in "${DIRS[@]}"; do
+        if [[ -d ${BOOTSTRAP_DIR}/$i ]]; then
+            echo "Copying $i to installation..."
+            cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
+            # N.B.: Does not copy hidden files!
+        fi
+    done
+}
+
 function xlr_generate_keystore {
     if [[ ! -d ${BOOTSTRAP_DIR}/conf ]]; then
         mkdir ${BOOTSTRAP_DIR}/conf
@@ -19,9 +30,14 @@ function xlr_generate_keystore {
     fi
 }
 
-function xlr_copy_bootstrap {
-    echo "Copying contents of ${BOOTSTRAP_DIR} to installation..."
-    cp -frv ${BOOTSTRAP_DIR} ${APP_HOME}
+function xlr_copy_bootstrap_conf {
+    FILES=( "repository-keystore.jceks" "logback.xml" "security.policy", "xl-release.policy" "deployit-defaults.properties" "xl-release-security.xml" "keystore.jks" "xl-release-server.conf" "xl-release-license.lic" )
+    for i in "${FILES[@]}"; do
+        if [[ -e ${BOOTSTRAP_DIR}/conf/$i ]]; then
+            echo "Copying $i to installation..."
+            cp ${BOOTSTRAP_DIR}/conf/$i ${APP_HOME}/conf
+        fi
+    done
 }
 
 function xlr_configure {
@@ -72,8 +88,9 @@ function xlr_configure {
     fi
 }
 
+xlr_copy_extensions
 xlr_generate_keystore
-xlr_copy_bootstrap
+xlr_copy_bootstrap_conf
 xlr_configure
 
 ${APP_HOME}/bin/run.sh
