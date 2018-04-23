@@ -41,8 +41,8 @@ COPY bin/xlr-bootstrapper.sh ${APP_HOME}
 RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
     chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
 
-# Do run as root
-USER 0
+# Don't run as root
+USER 10001
 WORKDIR ${APP_HOME}
 
 # plugins, hotfix, ext and conf will be copied from the /xlr-bootstrap by the bootstrapper into the installation
