@@ -42,6 +42,9 @@ spec:
               path: /
               port: xlr-http
             initialDelaySeconds: 60
+          env:
+            - name: XLR_DEVELOPMENT_MODE
+              value: "{{ .Values.xlrDevelopmentMode }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:

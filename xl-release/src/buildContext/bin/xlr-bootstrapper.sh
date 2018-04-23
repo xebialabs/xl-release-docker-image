@@ -5,6 +5,7 @@ IP_ADDRESS=$(hostname -I)
 echo "APP_ROOT=${APP_ROOT}"
 echo "BOOTSTRAP_DIR=${BOOTSTRAP_DIR}"
 echo "DATA_DIR=${DATA_DIR}"
+echo "XLR_DEVELOPMENT_MODE=${XLR_DEVELOPMENT_MODE}"
 
 function xlr_generate_keystore {
     if [[ ! -d ${BOOTSTRAP_DIR}/conf ]]; then
@@ -23,9 +24,15 @@ function xlr_copy_extensions {
     DIRS=( "plugins" "hotfix" "ext" )
     for i in "${DIRS[@]}"; do
         if [[ -d ${BOOTSTRAP_DIR}/$i ]]; then
-            echo "Copying $i to installation..."
-            cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
-            # N.B.: Does not copy hidden files!
+            if [ "$i" == "ext" ] && [ "${XLR_DEVELOPMENT_MODE}" == "true" ]; then
+                echo "Linking $i from installaton to ${BOOTSTRAP_DIR}"
+                rm -rf ${APP_HOME}/$i
+                ln -s ${BOOTSTRAP_DIR}/$i ${APP_HOME}/$i
+            else
+                echo "Copying $i to installation..."
+                cp -fr ${BOOTSTRAP_DIR}/$i/* ${APP_HOME}/$i
+                # N.B.: Does not copy hidden files!
+            fi
         fi
     done
 }
