@@ -45,6 +45,9 @@ spec:
           env:
             - name: XLR_DEVELOPMENT_MODE
               value: "{{ .Values.xlrDevelopmentMode }}"
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
