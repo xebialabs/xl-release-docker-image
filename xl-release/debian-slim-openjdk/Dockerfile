@@ -17,12 +17,13 @@ RUN mkdir ${APP_ROOT} && \
     mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME} && \
     mkdir ${BOOTSTRAP_DIR} && \
     mkdir ${DATA_DIR} && \
-    chgrp -R 0 ${APP_ROOT}
+    chgrp -R 0 ${APP_ROOT} && \
+    chmod -R g=u ${APP_ROOT}
 
 # Add bootstrapper script
 COPY bin/xlr-bootstrapper.sh ${APP_HOME}
 RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
-    chmod -R g=u ${APP_ROOT}
+    chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
 
 # Install man page
 COPY help.md /tmp
