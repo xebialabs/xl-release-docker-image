@@ -9,7 +9,6 @@ ARG XLR_VERSION
 ENV APP_ROOT=/opt/xl-release
 ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
 
-
 # Install XLR
 COPY xl-release-${XLR_VERSION}-server.zip /tmp
 RUN mkdir ${APP_ROOT} && \
@@ -29,7 +28,7 @@ RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
 COPY help.md /tmp
 RUN go-md2man -in /tmp/help.md -out /help.1
 
-FROM anapsix/alpine-java:8u172b11_jdk
+FROM openjdk:8-jdk-alpine
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
 LABEL name="xebialabs/xl-release" \
@@ -59,6 +58,8 @@ COPY --from=installer /help.1 /help.1
 # Copy configuration templates
 COPY conf-templates /tmp/templates
 
+# Install bash (for bootstrapper script)
+RUN apk -U upgrade && apk add bash
 
 # Don't run as root
 USER 10001
