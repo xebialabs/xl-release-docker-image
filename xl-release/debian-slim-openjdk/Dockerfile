@@ -29,7 +29,7 @@ RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
 COPY help.md /tmp
 RUN go-md2man -in /tmp/help.md -out /help.1
 
-FROM openjdk:8-jdk
+FROM anapsix/alpine-java:8u172b11_jdk
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
 LABEL name="xebialabs/xl-release" \
@@ -48,7 +48,7 @@ LABEL name="xebialabs/xl-release" \
       # io.openshift.tags="acme,starter"
 
 # Copy installed XLR
-ENV JAVA_HOME=/usr USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
+ENV JAVA_HOME=/opt/jdk USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
 ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
 
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IP_ADDRESS=$(hostname -I)
+IP_ADDRESS=$(hostname -i)
 
 echo "APP_ROOT=${APP_ROOT}"
 echo "BOOTSTRAP_DIR=${BOOTSTRAP_DIR}"
