@@ -56,7 +56,7 @@ COPY --from=installer ${APP_ROOT} ${APP_ROOT}
 # Copy installed man page
 COPY --from=installer /help.1 /help.1
 
-# Copy configuraton templates
+# Copy configuration templates
 COPY conf-templates /tmp/templates
 
 
