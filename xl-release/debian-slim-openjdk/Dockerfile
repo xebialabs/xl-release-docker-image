@@ -48,7 +48,7 @@ LABEL name="xebialabs/xl-release" \
       # io.openshift.tags="acme,starter"
 
 # Copy installed XLR
-ENV JAVA_HOME=/opt/jdk USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
+ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
 ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
 
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
