@@ -2,26 +2,31 @@ FROM buildpack-deps:stretch-scm as installer
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		unzip \
+		unzip go-md2man \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Unzip XLR
 ARG XLR_VERSION
 ENV APP_ROOT=/opt/xl-release
 ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
 
-RUN mkdir ${APP_ROOT}
-COPY xl-release-${XLR_VERSION}-server.zip ${APP_ROOT}
-RUN unzip ${APP_ROOT}/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT}
-RUN mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
-RUN mkdir ${BOOTSTRAP_DIR}
-RUN mkdir ${DATA_DIR}
-RUN chgrp -R 0 ${APP_ROOT}
-RUN chmod -R g=u ${APP_ROOT}
+
+# Install XLR
+COPY xl-release-${XLR_VERSION}-server.zip /tmp
+RUN mkdir ${APP_ROOT} && \
+    unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
+    mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME} && \
+    mkdir ${BOOTSTRAP_DIR} && \
+    mkdir ${DATA_DIR} && \
+    chgrp -R 0 ${APP_ROOT}
+
+# Add bootstrapper script
 COPY bin/xlr-bootstrapper.sh ${APP_HOME}
-RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh
-RUN chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
-RUN rm -f ${APP_ROOT}/xl-release-${XLR_VERSION}-server.zip
+RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
+    chmod -R g=u ${APP_ROOT}
+
+# Install man page
+COPY help.md /tmp
+RUN go-md2man -in /tmp/help.md -out /help.1
 
 FROM openjdk:8-jdk
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
@@ -41,18 +46,18 @@ LABEL name="xebialabs/xl-release" \
       # io.openshift.expose-services="" \
       # io.openshift.tags="acme,starter"
 
-COPY help.md /tmp/
-
-### add licenses to this directory
-COPY licenses /licenses
-
 # Copy installed XLR
 ENV JAVA_HOME=/usr USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
 ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
 
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
 
+# Copy installed man page
+COPY --from=installer /help.1 /help.1
+
+# Copy configuraton templates
 COPY conf-templates /tmp/templates
+
 
 # Don't run as root
 USER 10001
