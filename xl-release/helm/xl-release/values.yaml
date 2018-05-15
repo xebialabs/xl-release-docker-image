@@ -30,6 +30,14 @@ resources: {}
   #  cpu: 100m
   #  memory: 128Mi
 
+volumes:
+  - name: xlr-bootstrap
+    hostPath:
+      path: /Users/vinny/Research/run-k8s-jobs-from-xlr/xlr-bootstrap
+  - name: xlr-data
+    hostPath:
+      path: /Users/vinny/Research/run-k8s-jobs-from-xlr/xlr-data
+
 nodeSelector: {}
 
 tolerations: []
