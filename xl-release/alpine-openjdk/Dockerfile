@@ -53,8 +53,6 @@ COPY --from=installer ${APP_ROOT} ${APP_ROOT}
 # Copy configuration templates
 COPY conf-templates /tmp/templates
 
-
-
 # Don't run as root
 USER 10001
 WORKDIR ${APP_HOME}
