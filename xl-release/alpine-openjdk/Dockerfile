@@ -42,7 +42,7 @@ LABEL name="xebialabs/xl-release" \
 
 
 # Install dependencies
-RUN apk -U upgrade && apk add bash
+RUN apk -U upgrade && apk add bash dumb-init
 
 # Copy installed XLR
 ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
@@ -73,4 +73,6 @@ ENV XLR_METRICS_ENABLED false
 ENV XLR_DEVELOPMENT_MODE false
 
 EXPOSE 5516
-ENTRYPOINT ${APP_HOME}/xlr-bootstrapper.sh
+# Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
+# expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
+ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-release/xlr-server/xlr-bootstrapper.sh"]
