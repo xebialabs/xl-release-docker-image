@@ -22,6 +22,11 @@ COPY bin/xlr-bootstrapper.sh ${APP_HOME}
 RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
     chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
 
+# Add modified run script
+COPY bin/run.sh ${APP_HOME}/bin
+RUN chmod g+x ${APP_HOME}/bin/run.sh && \
+    chgrp 0 ${APP_HOME}/bin/run.sh
+
 FROM openjdk:8-jdk-alpine
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
