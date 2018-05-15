@@ -100,4 +100,4 @@ xlr_copy_extensions
 xlr_copy_bootstrap_conf
 xlr_configure
 
-${APP_HOME}/bin/run.sh
+exec ${APP_HOME}/bin/run.sh
