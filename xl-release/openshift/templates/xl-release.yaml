@@ -17,7 +17,7 @@ metadata:
       * Always know the status of automated and manual steps across the release pipeline
 
       * Identify bottlenecks, reduce errors, and lower the risk of release failures
-    tags: xebialabs, xl-release
+    tags: ci-cd,xebialabs,xl-release
     openshift.io/provider-display-name: XebiaLabs
     openshift.io/documentation-url: https://docs.xebialabs.com/xl-release/
     openshift.io/support-url: https://support.xebialabs.com/
