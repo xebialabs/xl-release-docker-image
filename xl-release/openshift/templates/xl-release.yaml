@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: xl-release
+  annotations:
+    openshift.io/display-name: "XL Release"
+    description: >-
+      Automate, orchestrate and get visibility into your release pipelines — at enterprise scale
+
+
+      Manage the most advanced release pipelines with ease:
+
+      * Plan, automate, and analyze the entire software release pipeline
+
+      * Control and optimize software delivery
+
+      * Always know the status of automated and manual steps across the release pipeline
+
+      * Identify bottlenecks, reduce errors, and lower the risk of release failures
+    tags: xebialabs, xl-release
+    openshift.io/provider-display-name: XebiaLabs
+    openshift.io/documentation-url: https://docs.xebialabs.com/xl-release/
+    openshift.io/support-url: https://support.xebialabs.com/
+parameters:
+  - name: REPLICA_COUNT
+    description: Number of replicas to run
+    value: "1"
+    required: true
+objects:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: xl-release
+      labels:
+        app: xl-release
+      annotations:
+        template.alpha.openshift.io/wait-for-ready: "true"
+    spec:
+      replicas: ${REPLICA_COUNT}
+      selector:
+        matchLabels:
+          app: xl-release
+      template:
+        metadata:
+          labels:
+            app: xl-release
+        spec:
+          containers:
+            - name: xl-release
+              image: "vpartington/xl-release:v7.5.3"
+              imagePullPolicy: Always
+              ports:
+                - name: xlr-http
+                  containerPort: 5516
+                  protocol: TCP
+              livenessProbe:
+                httpGet:
+                  path: /
+                  port: xlr-http
+                initialDelaySeconds: 60
+                periodSeconds: 10
+                failureThreshold: 12
+              readinessProbe:
+                httpGet:
+                  path: /
+                  port: xlr-http
+                initialDelaySeconds: 60
+                periodSeconds: 10
+                failureThreshold: 12
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: xl-release
+      labels:
+        app: xl-release
+    spec:
+      type: ClusterIP
+      ports:
+        - port: 80
+          targetPort: xlr-http
+          protocol: TCP
+          name: xlr-http-svc
+      selector:
+        app: xl-release
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: xl-release
+      labels:
+        app: xl-release
+    spec:
+      to:
+        kind: Service
+        name: xl-release
+      port:
+        targetPort: xlr-http-svc
