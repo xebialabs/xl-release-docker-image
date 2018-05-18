@@ -156,6 +156,10 @@ Resources:
       MinSize: '1'
       MaxSize: !Ref 'MaxSize'
       DesiredCapacity: !Ref 'DesiredCapacity'
+      Tags:
+      - Key: Name
+        Value: Managed by ECSAutoScalingGroup
+        PropagateAtLaunch: true
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
