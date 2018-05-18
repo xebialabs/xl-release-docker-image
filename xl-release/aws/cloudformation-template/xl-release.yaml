@@ -304,6 +304,6 @@ Outputs:
     Value: !Ref 'ECSCluster'
   ECSALB:
     Description: Your ALB DNS URL
-    Value: !Join ['', [!GetAtt [ECSALB, DNSName]]]
+    Value: !Join ['', ['http://', !GetAtt [ECSALB, DNSName]]]
   taskdef:
     Value: !Ref 'taskdefinition'
