@@ -109,7 +109,7 @@ Resources:
       Scheme: internet-facing
       LoadBalancerAttributes:
       - Key: idle_timeout.timeout_seconds
-        Value: '60'
+        Value: '30'
       Subnets: !Ref 'SubnetId'
       SecurityGroups: [!Ref 'EcsSecurityGroup']
   ALBListener:
@@ -146,7 +146,7 @@ Resources:
       Name: ECSTG
       Port: 5516
       Protocol: HTTP
-      UnhealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
       VpcId: !Ref 'VpcId'
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -188,6 +188,7 @@ Resources:
         TargetGroupArn: !Ref 'ECSTG'
       Role: !Ref 'ECSServiceRole'
       TaskDefinition: !Ref 'taskdefinition'
+      HealthCheckGracePeriodSeconds: 60
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
