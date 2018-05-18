@@ -298,12 +298,6 @@ Resources:
       Path: /
       Roles: [!Ref 'EC2Role']
 Outputs:
-  ecsservice:
-    Value: !Ref 'service'
-  ecscluster:
-    Value: !Ref 'ECSCluster'
-  ECSALB:
-    Description: Your ALB DNS URL
-    Value: !Join ['', ['http://', !GetAtt [ECSALB, DNSName]]]
-  taskdef:
-    Value: !Ref 'taskdefinition'
+  URL:
+    Description: URL to access XL Release
+    Value: !Join ['', ['http://', !GetAtt [xlrLb, DNSName]]]
