@@ -1,4 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
+#
+# Input parameters
+#
 Parameters:
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
@@ -27,6 +30,9 @@ Parameters:
       c3.2xlarge, c3.4xlarge, c3.8xlarge, r3.large, r3.xlarge, r3.2xlarge, r3.4xlarge,
       r3.8xlarge, i2.xlarge, i2.2xlarge, i2.4xlarge, i2.8xlarge]
     ConstraintDescription: Please choose a valid instance type.
+#
+# Mappings
+#
 Mappings:
   AWSRegionToAMI:
     us-east-1:
@@ -47,47 +53,28 @@ Mappings:
       AMIID: ami-a900a3ca
     ap-southeast-2:
       AMIID: ami-5781be34
+#
+# Resources
+#
 Resources:
+#
+# ECS configurations
+#
   xlrEcsCluster:
     Type: AWS::ECS::Cluster
-  xlrElbSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  xlrEcsService:
+    Type: AWS::ECS::Service
+    DependsOn: xlrElbListener
     Properties:
-      GroupDescription: ECS ALB Security Group
-      VpcId: !Ref 'VpcId'
-  xlrElbSecurityGroupHTTPinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref 'xlrElbSecurityGroup'
-      IpProtocol: tcp
-      FromPort: '80'
-      ToPort: '80'
-      CidrIp: 0.0.0.0/0
-  xlrEcsSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: ECS Instance Security Group
-      VpcId: !Ref 'VpcId'
-  xlrEcsSecurityGroupSSHinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref 'xlrEcsSecurityGroup'
-      IpProtocol: tcp
-      FromPort: '22'
-      ToPort: '22'
-      CidrIp: 0.0.0.0/0
-  xlrEcsSecurityGroupALBports:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref 'xlrEcsSecurityGroup'
-      IpProtocol: tcp
-      FromPort: '31000'
-      ToPort: '61000'
-      SourceSecurityGroupId: !Ref 'xlrElbSecurityGroup'
-  xlrCloudwatchLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
+      Cluster: !Ref 'xlrEcsCluster'
+      DesiredCount: '1'
+      LoadBalancers:
+      - ContainerName: xl-release
+        ContainerPort: '5516'
+        TargetGroupArn: !Ref 'xlrTg'
+      TaskDefinition: !Ref 'xlrEcsTaskDefinition'
+      Role: !Ref 'xlrEcsServiceRole'
+      HealthCheckGracePeriodSeconds: 60
   xlrEcsTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -106,95 +93,6 @@ Resources:
             awslogs-stream-prefix: xl-release
         PortMappings:
         - ContainerPort: 5516
-  xlrLb:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Scheme: internet-facing
-      LoadBalancerAttributes:
-      - Key: idle_timeout.timeout_seconds
-        Value: '30'
-      Subnets: !Ref 'SubnetId'
-      SecurityGroups: [!Ref 'xlrElbSecurityGroup']
-  xlrElbListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn: xlrEcsServiceRole
-    Properties:
-      DefaultActions:
-      - Type: forward
-        TargetGroupArn: !Ref 'xlrTg'
-      LoadBalancerArn: !Ref 'xlrLb'
-      Port: '80'
-      Protocol: HTTP
-  xlrElbListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    DependsOn: xlrElbListener
-    Properties:
-      Actions:
-      - Type: forward
-        TargetGroupArn: !Ref 'xlrTg'
-      Conditions:
-      - Field: path-pattern
-        Values: [/]
-      ListenerArn: !Ref 'xlrElbListener'
-      Priority: 1
-  xlrTg:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    DependsOn: xlrLb
-    Properties:
-      HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Port: 5516
-      Protocol: HTTP
-      UnhealthyThresholdCount: 2
-      VpcId: !Ref 'VpcId'
-  xlrAsg:
-    Type: AWS::AutoScaling::AutoScalingGroup
-    Properties:
-      VPCZoneIdentifier: !Ref 'SubnetId'
-      LaunchConfigurationName: !Ref 'xlrLc'
-      MinSize: '1'
-      MaxSize: !Ref 'MaxSize'
-      DesiredCapacity: !Ref 'DesiredCapacity'
-      Tags:
-      - Key: Name
-        Value: Managed by xlrAsg
-        PropagateAtLaunch: true
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT15M
-    UpdatePolicy:
-      AutoScalingReplacingUpdate:
-        WillReplace: 'true'
-  xlrLc:
-    Type: AWS::AutoScaling::LaunchConfiguration
-    Properties:
-      ImageId: !FindInMap [AWSRegionToAMI, !Ref 'AWS::Region', AMIID]
-      SecurityGroups: [!Ref 'xlrEcsSecurityGroup']
-      InstanceType: !Ref 'InstanceType'
-      IamInstanceProfile: !Ref 'xlrLcInstanceProfile'
-      KeyName: !Ref 'KeyName'
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash -xe
-          echo ECS_CLUSTER=${xlrEcsCluster} >> /etc/ecs/ecs.config
-          yum install -y aws-cfn-bootstrap
-          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource xlrAsg --region ${AWS::Region}
-  xlrEcsService:
-    Type: AWS::ECS::Service
-    DependsOn: xlrElbListener
-    Properties:
-      Cluster: !Ref 'xlrEcsCluster'
-      DesiredCount: '1'
-      LoadBalancers:
-      - ContainerName: xl-release
-        ContainerPort: '5516'
-        TargetGroupArn: !Ref 'xlrTg'
-      Role: !Ref 'xlrEcsServiceRole'
-      TaskDefinition: !Ref 'xlrEcsTaskDefinition'
-      HealthCheckGracePeriodSeconds: 60
   xlrEcsServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -237,42 +135,6 @@ Resources:
         StepAdjustments:
         - MetricIntervalLowerBound: 0
           ScalingAdjustment: 200
-  xlrElb500sAlarmScaleUp:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      EvaluationPeriods: '1'
-      Statistic: Average
-      Threshold: '10'
-      AlarmDescription: Alarm if our ALB generates too many HTTP 500s.
-      Period: '60'
-      AlarmActions: [!Ref 'xlrEcsServiceScalingPolicy']
-      Namespace: AWS/ApplicationELB
-      Dimensions:
-        - Name: LoadBalancer
-          Value: !GetAtt
-            - xlrLb
-            - LoadBalancerFullName
-      ComparisonOperator: GreaterThanThreshold
-      MetricName: HTTPCode_ELB_5XX_Count
-  xlrEC2Role:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: [ec2.amazonaws.com]
-          Action: ['sts:AssumeRole']
-      Path: /
-      Policies:
-      - PolicyName: ecs-service
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action: ['ecs:CreateCluster', 'ecs:DeregisterContainerInstance', 'ecs:DiscoverPollEndpoint',
-              'ecs:Poll', 'ecs:RegisterContainerInstance', 'ecs:StartTelemetrySession',
-              'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents']
-            Resource: '*'
   xlrEcsServiceScalingRole:
     Type: AWS::IAM::Role
     Properties:
@@ -291,11 +153,173 @@ Resources:
             Action: ['application-autoscaling:*', 'cloudwatch:DescribeAlarms', 'cloudwatch:PutMetricAlarm',
               'ecs:DescribeServices', 'ecs:UpdateService']
             Resource: '*'
+#
+# Load balancing configurations
+#
+  xlrLb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: '30'
+      Subnets: !Ref 'SubnetId'
+      SecurityGroups: [!Ref 'xlrElbSecurityGroup']
+  xlrElbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS ALB Security Group
+      VpcId: !Ref 'VpcId'
+  xlrElbSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref 'xlrElbSecurityGroup'
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  xlrElbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: xlrEcsServiceRole
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref 'xlrTg'
+      LoadBalancerArn: !Ref 'xlrLb'
+      Port: '80'
+      Protocol: HTTP
+  xlrElbListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: xlrElbListener
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref 'xlrTg'
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref 'xlrElbListener'
+      Priority: 1
+  xlrTg:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: xlrLb
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 5516
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref 'VpcId'
+#
+# Auto scaling configurations
+#
+  xlrAsg:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: !Ref 'SubnetId'
+      LaunchConfigurationName: !Ref 'xlrLc'
+      MinSize: '1'
+      MaxSize: !Ref 'MaxSize'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+      Tags:
+      - Key: Name
+        Value: Managed by xlrAsg
+        PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: 'true'
+  xlrLc:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !FindInMap [AWSRegionToAMI, !Ref 'AWS::Region', AMIID]
+      SecurityGroups: [!Ref 'xlrLcSecurityGroup']
+      InstanceType: !Ref 'InstanceType'
+      IamInstanceProfile: !Ref 'xlrLcInstanceProfile'
+      KeyName: !Ref 'KeyName'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${xlrEcsCluster} >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource xlrAsg --region ${AWS::Region}
+  xlrLcSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Instance Security Group
+      VpcId: !Ref 'VpcId'
+  xlrLcSecurityGroupSSHinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref 'xlrLcSecurityGroup'
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 0.0.0.0/0
+  xlrLcSecurityGroupALBports:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref 'xlrLcSecurityGroup'
+      IpProtocol: tcp
+      FromPort: '31000'
+      ToPort: '61000'
+      SourceSecurityGroupId: !Ref 'xlrElbSecurityGroup'
   xlrLcInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
-      Roles: [!Ref 'xlrEC2Role']
+      Roles: [!Ref 'xlrLcRole']
+  xlrLcRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['ecs:CreateCluster', 'ecs:DeregisterContainerInstance', 'ecs:DiscoverPollEndpoint',
+              'ecs:Poll', 'ecs:RegisterContainerInstance', 'ecs:StartTelemetrySession',
+              'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents']
+            Resource: '*'
+#
+# CloudWatch configurations
+#
+  xlrCloudwatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+  xlrElb500sAlarmScaleUp:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      EvaluationPeriods: '1'
+      Statistic: Average
+      Threshold: '10'
+      AlarmDescription: Alarm if our ALB generates too many HTTP 500s.
+      Period: '60'
+      AlarmActions: [!Ref 'xlrEcsServiceScalingPolicy']
+      Namespace: AWS/ApplicationELB
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt
+            - xlrLb
+            - LoadBalancerFullName
+      ComparisonOperator: GreaterThanThreshold
+      MetricName: HTTPCode_ELB_5XX_Count
+#
+# Outputs
+#
 Outputs:
   URL:
     Description: URL to access XL Release
