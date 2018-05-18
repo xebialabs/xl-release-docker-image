@@ -50,35 +50,40 @@ Mappings:
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
-  EcsSecurityGroup:
+  EcsAlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: ECS Security Group
+      GroupDescription: ECS ALB Security Group
       VpcId: !Ref 'VpcId'
-  EcsSecurityGroupHTTPinbound:
+  EcsAlbSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref 'EcsSecurityGroup'
+      GroupId: !Ref 'EcsAlbSecurityGroup'
       IpProtocol: tcp
       FromPort: '80'
       ToPort: '80'
       CidrIp: 0.0.0.0/0
-  EcsSecurityGroupSSHinbound:
+  EcsInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Instance Security Group
+      VpcId: !Ref 'VpcId'
+  EcsInstanceSecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref 'EcsSecurityGroup'
+      GroupId: !Ref 'EcsInstanceSecurityGroup'
       IpProtocol: tcp
       FromPort: '22'
       ToPort: '22'
       CidrIp: 0.0.0.0/0
-  EcsSecurityGroupALBports:
+  EcsInstanceSecurityGroupALBports:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref 'EcsSecurityGroup'
+      GroupId: !Ref 'EcsInstanceSecurityGroup'
       IpProtocol: tcp
       FromPort: '31000'
       ToPort: '61000'
-      SourceSecurityGroupId: !Ref 'EcsSecurityGroup'
+      SourceSecurityGroupId: !Ref 'EcsAlbSecurityGroup'
   CloudwatchLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -110,7 +115,7 @@ Resources:
       - Key: idle_timeout.timeout_seconds
         Value: '30'
       Subnets: !Ref 'SubnetId'
-      SecurityGroups: [!Ref 'EcsSecurityGroup']
+      SecurityGroups: [!Ref 'EcsAlbSecurityGroup']
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     DependsOn: ECSServiceRole
@@ -168,7 +173,7 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: !FindInMap [AWSRegionToAMI, !Ref 'AWS::Region', AMIID]
-      SecurityGroups: [!Ref 'EcsSecurityGroup']
+      SecurityGroups: [!Ref 'EcsInstanceSecurityGroup']
       InstanceType: !Ref 'InstanceType'
       IamInstanceProfile: !Ref 'EC2InstanceProfile'
       KeyName: !Ref 'KeyName'
