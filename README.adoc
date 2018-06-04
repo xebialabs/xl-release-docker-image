@@ -11,21 +11,21 @@ This repository contains the source code for two flavors of Docker images for XL
 To build the regular image:
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=7.5.3 --tag xebialabs/xl-release:v7.5 --tag xebialabs/xl-release:v7.5-alpine --tag xebialabs/xl-release:v7.5.3 --tag xebialabs/xl-release:v7.5.3-alpine -f alpine/Dockerfile buildContext
+$ docker build --build-arg XLR_VERSION=8.0.1 --tag xebialabs/xl-release:v8.0 --tag xebialabs/xl-release:v8.0-alpine --tag xebialabs/xl-release:v8.0.1 --tag xebialabs/xl-release:v8.0.1-alpine -f alpine/Dockerfile buildContext
 ----
 
 To publish the regular image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-release:v7.5
-$ docker push xebialabs/xl-release:v7.5-alpine
-$ docker push xebialabs/xl-release:v7.5.3
-$ docker push xebialabs/xl-release:v7.5.3-alpine
+$ docker push xebialabs/xl-release:v8.0
+$ docker push xebialabs/xl-release:v8.0-alpine
+$ docker push xebialabs/xl-release:v8.0.1
+$ docker push xebialabs/xl-release:v8.0.1-alpine
 ----
 
 
 To build the Red Hat certified image:
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=7.5.3 --tag xebialabs/xl-release:v7.5-rhel --tag xebialabs/xl-release:v7.5.3-rhel -f rhel/Dockerfile buildContext
+$ docker build --build-arg XLR_VERSION=8.0.1 --tag xebialabs/xl-release:v8.0-rhel --tag xebialabs/xl-release:v8.0.1-rhel -f rhel/Dockerfile buildContext
 ----

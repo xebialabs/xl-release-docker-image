@@ -33,7 +33,7 @@ MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 LABEL name="xebialabs/xl-release" \
       maintainer="docker@xebialabs.com" \
       vendor="XebiaLabs" \
-      version="7.5.3" \
+      version="8.0.1" \
       release="1" \
       summary="XL Release" \
       description="Release orchestration" \
