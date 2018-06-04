@@ -1,9 +1,31 @@
-= XL Docker containers
+= XL Docker images for XL Release
+
+This repository contains the source code for two flavors of Docker images for XL release:
+* The regular image, which based on the Alpine Linux flavor of the [OpenJDK base image](https://hub.docker.com/_/openjdk/)
+* The Red Hat certified image, which is baed on the rhel7-atomic base image
+
+
 
 == Building the images
-To build the image, execute:
 
+To build the regular image:
+[source,shell]
+---
+$ docker build --build-arg XLR_VERSION=7.5.3 --tag xebialabs/xl-release:v7.5 --tag xebialabs/xl-release:v7.5-alpine --tag xebialabs/xl-release:v7.5.3 --tag xebialabs/xl-release:v7.5.3-alpine -f alpine/Dockerfile buildContext
+---
+
+To publish the regular image:
+[source,shell]
+---
+$ docker push xebialabs/xl-release:v7.5
+$ docker push xebialabs/xl-release:v7.5-alpine
+$ docker push xebialabs/xl-release:v7.5.3
+$ docker push xebialabs/xl-release:v7.5.3-alpine
+---
+
+
+To build the Red Hat certified image:
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=<version> -f rhel7-atomic/Dockerfile src/buildContext
+$ docker build --build-arg XLR_VERSION=7.5.3 --tag xebialabs/xl-release:v7.5-rhel --tag xebialabs/xl-release:v7.5.3-rhel -f rhel/Dockerfile buildContext
 ----
