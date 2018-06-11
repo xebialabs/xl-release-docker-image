@@ -17,16 +17,16 @@ RUN mkdir -p ${APP_ROOT} && \
 COPY resources/bin/*.sh ${APP_HOME}/bin/
 
 # Move and augment conf directory of regular install
-RUN mv ${APP_HOME}/conf ${APP_HOME}/provided-conf && \
+RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
     mkdir ${APP_HOME}/conf
-COPY resources/provided-conf ${APP_HOME}/provided-conf
+COPY resources/default-conf ${APP_HOME}/default-conf
 
 # Create and populate node-specific conf directory
 RUN mkdir ${APP_HOME}/node-conf
 COPY resources/node-conf ${APP_HOME}/node-conf
 
 # Move plugins directory
-RUN mv ${APP_HOME}/plugins ${APP_HOME}/provided-plugins && \
+RUN mv ${APP_HOME}/plugins ${APP_HOME}/default-plugins && \
     mkdir ${APP_HOME}/plugins
 
 # Create empty repository directory

@@ -2,8 +2,8 @@
 
 # Set up new installation
 if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
-  echo "Copying provided configuration"
-  cp -r ${APP_HOME}/provided-conf/* ${APP_HOME}/conf/
+  echo "Copying default configuration"
+  cp -r ${APP_HOME}/default-conf/* ${APP_HOME}/conf/
 
   if [ "${ADMIN_PASSWORD}" == "" ]; then
     ADMIN_PASSWORD=`pwgen 8 1`
@@ -19,8 +19,8 @@ if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
   echo "Generating repository keystore"
   keytool -genseckey -alias deployit-passsword-key -keyalg aes -keysize 128 -keypass "deployit" -keystore ${APP_HOME}/conf/repository-keystore.jceks -storetype jceks -storepass ${REPOSITORY_KEYSTORE_PASSPHRASE}
 
-  echo "Copying provided plugins"
-  cp -r ${APP_HOME}/provided-plugins/* ${APP_HOME}/plugins/
+  echo "Copying default plugins"
+  cp -r ${APP_HOME}/default-plugins/* ${APP_HOME}/plugins/
 fi
 
 # Generate node specific configuration with IP address of container

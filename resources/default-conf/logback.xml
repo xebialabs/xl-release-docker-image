@@ -51,7 +51,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.xebialabs.deployit.plumbing.AccessLogFilter"  level="trace" additivity="false">
+    <logger name="com.xebialabs.deployit.plumbing.AccessLogFilter" level="trace" additivity="false">
         <appender-ref ref="ACCESS" />
     </logger>
 
