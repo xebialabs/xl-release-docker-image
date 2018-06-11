@@ -3,7 +3,15 @@
 # Set up new installation
 if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
   echo "Copying default configuration"
-  cp -r ${APP_HOME}/default-conf/* ${APP_HOME}/conf/
+  cd ${APP_HOME}/default-conf
+  for f in *; do
+    if [ -f ${APP_HOME}/conf/$f ]; then
+      echo "... Not copying $f because it already exists in the conf directory"
+    else
+      cp -a $f ${APP_HOME}/conf/
+    fi
+  done
+  cd -
 
   if [ "${ADMIN_PASSWORD}" == "" ]; then
     ADMIN_PASSWORD=`pwgen 8 1`
