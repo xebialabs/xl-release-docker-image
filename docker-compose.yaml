@@ -7,5 +7,6 @@ services:
             - '${HOME}/xl-release-server/conf:/opt/xl-release-server/conf:rw'
             - '${HOME}/xl-release-server/ext:/opt/xl-release-server/ext:ro'
             - '${HOME}/xl-release-server/plugins:/opt/xl-release-server/plugins:rw'
+            - '${HOME}/xl-release-server/archive:/opt/xl-release-server/archive:rw'
             - '${HOME}/xl-release-server/repository:/opt/xl-release-server/repository:rw'
         image: xebialabs/xl-release:v8.0
