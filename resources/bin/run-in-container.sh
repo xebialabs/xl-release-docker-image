@@ -2,11 +2,12 @@
 
 # Set up new installation
 if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
-  echo "Copying default configuration"
+  echo "Setting up new installation of XL Release"
+  echo "... Copying default configuration"
   cd ${APP_HOME}/default-conf
   for f in *; do
     if [ -f ${APP_HOME}/conf/$f ]; then
-      echo "... Not copying $f because it already exists in the conf directory"
+      echo "...... Not copying $f because it already exists in the conf directory"
     else
       cp -a $f ${APP_HOME}/conf/
     fi
@@ -15,20 +16,22 @@ if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
 
   if [ "${ADMIN_PASSWORD}" == "" ]; then
     ADMIN_PASSWORD=`pwgen 8 1`
-    echo "Generated admin password: ${ADMIN_PASSWORD}"
+    echo "... Generated admin password: ${ADMIN_PASSWORD}"
   fi
   echo "admin.password=${ADMIN_PASSWORD}" >> ${APP_HOME}/conf/xl-release-server.conf
 
   if [ "${REPOSITORY_KEYSTORE_PASSPHRASE}" == "" ]; then
     REPOSITORY_KEYSTORE_PASSPHRASE=`pwgen 16 1`
-    echo "Generated repository keystore passphrase: ${REPOSITORY_KEYSTORE_PASSPHRASE}"
+    echo "... Generated repository keystore passphrase: ${REPOSITORY_KEYSTORE_PASSPHRASE}"
     echo "repository.keystore.password=${REPOSITORY_KEYSTORE_PASSPHRASE}" >> ${APP_HOME}/conf/xl-release-server.conf
   fi
-  echo "Generating repository keystore"
+  echo "... Generating repository keystore"
   keytool -genseckey -alias deployit-passsword-key -keyalg aes -keysize 128 -keypass "deployit" -keystore ${APP_HOME}/conf/repository-keystore.jceks -storetype jceks -storepass ${REPOSITORY_KEYSTORE_PASSPHRASE}
 
-  echo "Copying default plugins"
+  echo "... Copying default plugins"
   cp -r ${APP_HOME}/default-plugins/* ${APP_HOME}/plugins/
+
+  echo "Done"
 fi
 
 # Generate node specific configuration with IP address of container
