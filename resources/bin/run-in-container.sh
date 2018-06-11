@@ -36,7 +36,7 @@ if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
       cd ${APP_HOME}/default-plugins/$pluginrepo
       for pluginjar in *; do
         pluginbasename=${pluginjar%%-[0-9\.]*.jar}
-        if [ -f ${APP_HOME}/plugins/$pluginrepo/$pluginbasename-[0-9\.]*.jar ]; then
+        if [ -f ${APP_HOME}/plugins/*/$pluginbasename-[0-9\.]*.jar ]; then
           echo "...... Not copying $pluginrepo/$pluginjar because a version of that plugin already exists in the plugins directory"
         else
           cp -R ${APP_HOME}/default-plugins/$pluginrepo/$pluginjar ${APP_HOME}/plugins/$pluginrepo/
