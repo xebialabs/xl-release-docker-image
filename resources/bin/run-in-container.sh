@@ -9,10 +9,10 @@ if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
     if [ -f ${APP_HOME}/conf/$f ]; then
       echo "...... Not copying $f because it already exists in the conf directory"
     else
-      cp -a $f ${APP_HOME}/conf/
+      cp -R $f ${APP_HOME}/conf/
     fi
   done
-  cd -
+  cd ${APP_HOME}
 
   if [ "${ADMIN_PASSWORD}" == "" ]; then
     ADMIN_PASSWORD=`pwgen 8 1`
