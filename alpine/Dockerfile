@@ -29,8 +29,8 @@ COPY resources/node-conf ${APP_HOME}/node-conf
 RUN mv ${APP_HOME}/plugins ${APP_HOME}/default-plugins && \
     mkdir ${APP_HOME}/plugins
 
-# Create empty repository directory
-RUN mkdir ${APP_HOME}/repository
+# Create empty archive and repository directories
+RUN mkdir ${APP_HOME}/archive ${APP_HOME}/repository
 
 # Set permissions
 RUN chgrp -R 0 ${APP_ROOT} && \
