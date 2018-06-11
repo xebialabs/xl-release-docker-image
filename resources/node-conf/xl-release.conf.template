@@ -1,0 +1,9 @@
+# Node specific XL Release configuration
+xl {
+  cluster {
+    node {
+      id = "${IP_ADDRESS}"
+      hostname = "${IP_ADDRESS}"
+    }
+  }
+}

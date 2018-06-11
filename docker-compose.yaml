@@ -1,0 +1,11 @@
+version: '3'
+services:
+    xlr:
+        ports:
+            - '5516:5516'
+        volumes:
+            - '${HOME}/xl-release-server/conf:/opt/xl-release-server/conf:rw'
+            - '${HOME}/xl-release-server/ext:/opt/xl-release-server/ext:ro'
+            - '${HOME}/xl-release-server/plugins:/opt/xl-release-server/plugins:rw'
+            - '${HOME}/xl-release-server/repository:/opt/xl-release-server/repository:rw'
+        image: xebialabs/xl-release:v8.0

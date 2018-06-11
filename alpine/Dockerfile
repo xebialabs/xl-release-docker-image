@@ -4,28 +4,38 @@ FROM alpine:3.7 as installer
 RUN apk -U upgrade && apk add unzip
 
 ARG XLR_VERSION
-ENV APP_ROOT=/opt/xl-release
-ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
+ENV APP_ROOT=/opt
+ENV APP_HOME=/opt/xl-release-server
 
 # Install XLR
-COPY xl-release-${XLR_VERSION}-server.zip /tmp
+COPY resources/xl-release-${XLR_VERSION}-server.zip /tmp
 RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
-    mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME} && \
-    mkdir ${BOOTSTRAP_DIR} && \
-    mkdir ${DATA_DIR} && \
-    chgrp -R 0 ${APP_ROOT} && \
-    chmod -R g=u ${APP_ROOT}
+    mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
 
-# Add bootstrapper script
-COPY bin/xlr-bootstrapper.sh ${APP_HOME}
-RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
-    chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
+# Augment bin directory of regular install
+COPY resources/bin/*.sh ${APP_HOME}/bin/
 
-# Add modified run script
-COPY bin/run.sh ${APP_HOME}/bin
-RUN chmod g+x ${APP_HOME}/bin/run.sh && \
-    chgrp 0 ${APP_HOME}/bin/run.sh
+# Move and augment conf directory of regular install
+RUN mv ${APP_HOME}/conf ${APP_HOME}/provided-conf && \
+    mkdir ${APP_HOME}/conf
+COPY resources/provided-conf ${APP_HOME}/provided-conf
+
+# Create and populate node-specific conf directory
+RUN mkdir ${APP_HOME}/node-conf
+COPY resources/node-conf ${APP_HOME}/node-conf
+
+# Move plugins directory
+RUN mv ${APP_HOME}/plugins ${APP_HOME}/provided-plugins && \
+    mkdir ${APP_HOME}/plugins
+
+# Create empty repository directory
+RUN mkdir ${APP_HOME}/repository
+
+# Set permissions
+RUN chgrp -R 0 ${APP_ROOT} && \
+    chmod -R g=u ${APP_ROOT} && \
+    chmod g+x ${APP_HOME}/bin/*.sh
 
 FROM openjdk:8-jdk-alpine
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
@@ -36,48 +46,26 @@ LABEL name="xebialabs/xl-release" \
       version="8.0.1" \
       release="1" \
       summary="XL Release" \
-      description="Release orchestration" \
-### Required labels above - recommended below
+      description="Automate, orchestrate and get visibility into your release pipelines — at enterprise scale" \
       url="https://www.xebialabs.com/xl-release"
-      # run='docker run -tdi --name ${NAME} ${IMAGE}' \
-      # io.k8s.description="Starter app will do ....." \
-      # io.k8s.display-name="Starter app" \
-      # io.openshift.expose-services="" \
-      # io.openshift.tags="acme,starter"
-
 
 # Install dependencies
-RUN apk -U upgrade && apk add bash dumb-init
+RUN apk add --no-cache dumb-init pwgen
+
+ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
+ENV APP_HOME=/opt/xl-release-server
 
 # Copy installed XLR
-ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
-ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
-
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
 
-# Copy configuration templates
-COPY conf-templates /tmp/templates
+WORKDIR ${APP_HOME}
 
 # Don't run as root
 USER 10001
-WORKDIR ${APP_HOME}
 
-# plugins, hotfix, ext and conf will be copied from the /xlr-bootstrap by the bootstrapper into the installation
-# repository and archive will be the persistent data layer for the standalone version of XLR
-VOLUME ${BOOTSTRAP_DIR} ${DATA_DIR}
-
-ENV XLR_CLUSTER_MODE default
-ENV XLR_DB_TYPE h2
-ENV XLR_REPO_DB_URL jdbc:h2:file:${DATA_DIR}/xlr-repo
-ENV XLR_REPO_DB_USERNAME sa
-ENV XLR_REPO_DB_PASSWORD 123
-ENV XLR_ARCHIVE_DB_URL jdbc:h2:file:${DATA_DIR}/xlr-archive
-ENV XLR_ARCHIVE_DB_USERNAME sa
-ENV XLR_ARCHIVE_DB_PASSWORD 123
-ENV XLR_METRICS_ENABLED false
-ENV XLR_DEVELOPMENT_MODE false
-
+VOLUME ["${APP_HOME}/node-conf", "${APP_HOME}/conf", "${APP_HOME}/ext", "${APP_HOME}/repository", "${APP_HOME}/plugins"]
 EXPOSE 5516
+
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
 # expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-release/xlr-server/xlr-bootstrapper.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-release-server/bin/run-in-container.sh"]
