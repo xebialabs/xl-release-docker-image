@@ -29,7 +29,24 @@ if [ ! -f "${APP_HOME}/conf/xl-release-server.conf" ]; then
   keytool -genseckey -alias deployit-passsword-key -keyalg aes -keysize 128 -keypass "deployit" -keystore ${APP_HOME}/conf/repository-keystore.jceks -storetype jceks -storepass ${REPOSITORY_KEYSTORE_PASSPHRASE}
 
   echo "... Copying default plugins"
-  cp -r ${APP_HOME}/default-plugins/* ${APP_HOME}/plugins/
+  cd ${APP_HOME}/default-plugins
+  for pluginrepo in *; do
+    if [ -d ${APP_HOME}/default-plugins/$pluginrepo ]; then
+      mkdir -p ${APP_HOME}/plugins/$pluginrepo
+      cd ${APP_HOME}/default-plugins/$pluginrepo
+      for pluginjar in *; do
+        pluginbasename=${pluginjar%%-[0-9\.]*.jar}
+        if [ -f ${APP_HOME}/plugins/$pluginrepo/$pluginbasename-[0-9\.]*.jar ]; then
+          echo "...... Not copying $pluginrepo/$pluginjar because a version of that plugin already exists in the plugins directory"
+        else
+          cp -R ${APP_HOME}/default-plugins/$pluginrepo/$pluginjar ${APP_HOME}/plugins/$pluginrepo/
+        fi
+      done
+    else
+      cp -R ${APP_HOME}/default-plugins/$pluginrepo ${APP_HOME}/plugins/
+    fi
+  done
+  cd ${APP_HOME}
 
   echo "Done"
 fi
