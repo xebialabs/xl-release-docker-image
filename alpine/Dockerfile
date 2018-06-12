@@ -63,10 +63,7 @@ WORKDIR ${APP_HOME}
 # Don't run as root
 USER 10001
 
-VOLUME ["${APP_HOME}/hotfix"]
-VOLUME ["${APP_HOME}/node-conf", "${APP_HOME}/conf"]
-VOLUME ["${APP_HOME}/ext", "${APP_HOME}/plugins"]
-VOLUME ["${APP_HOME}/repository", "${APP_HOME}/archive"]
+VOLUME ["${APP_HOME}/archive", "${APP_HOME}/conf", "${APP_HOME}/hotfix", "${APP_HOME}/ext", "${APP_HOME}/plugins", "${APP_HOME}/repository"]
 EXPOSE 5516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
