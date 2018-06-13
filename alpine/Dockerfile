@@ -8,7 +8,7 @@ ENV APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-release-server
 
 # Install XLR
-COPY resources/xl-release-${XLR_VERSION}-server.zip /tmp
+ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
 RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
     mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
@@ -26,7 +26,7 @@ COPY resources/default-conf ${APP_HOME}/default-conf
 
 # Create and populate node-specific conf directory
 RUN mkdir ${APP_HOME}/node-conf
-COPY resources/node-conf ${APP_HOME}/node-conf
+ADD resources/node-conf/xl-release.conf.template ${APP_HOME}/node-conf
 
 # Move plugins directory
 RUN mv ${APP_HOME}/plugins ${APP_HOME}/default-plugins && \
