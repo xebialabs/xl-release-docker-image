@@ -1,7 +1,7 @@
 FROM alpine:3.7 as installer
 
 # Install dependencies
-RUN apk add --no-cache unzip
+RUN apk add --no-cache gawk sed unzip
 
 ARG XLR_VERSION
 ENV APP_ROOT=/opt
@@ -24,7 +24,14 @@ RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
     mkdir ${APP_HOME}/conf
 COPY resources/default-conf ${APP_HOME}/default-conf
 
-# Create and populate node-specific conf directory
+# Modify conf/xlr-wrapper-linux.conf to add node-conf to the classpath and to add container-specific VM options
+RUN gawk -i inplace '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
+{ if (match($0, /^(wrapper.java.classpath).([0-9]+)=(.*)$/, a)) { printf("%s.%d=%s\n", a[1], (a[2]+1), a[3]) } else \
+  if (/^wrapper.java.additional.1=-Xms1024m$/) { print "wrapper.java.additional.1=-XX:+UnlockExperimentalVMOptions" } else \
+  if (/^wrapper.java.additional.2=-Xmx4096m$/) { print "wrapper.java.additional.2=-XX:+UseCGroupMemoryLimitForHeap" } else \
+  { print $0 }}' ${APP_HOME}/default-conf/xlr-wrapper-linux.conf
+
+# Create node-specific conf directory and add template for node-specific xl-release.conf file
 RUN mkdir ${APP_HOME}/node-conf
 ADD resources/node-conf/xl-release.conf.template ${APP_HOME}/node-conf
 
