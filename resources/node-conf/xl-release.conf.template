@@ -1,4 +1,5 @@
-# Node specific XL Release configuration
+# Template for node specific XL Release configuration
+#
 xl {
   cluster {
     node {
