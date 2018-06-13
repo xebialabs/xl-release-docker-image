@@ -1,7 +1,7 @@
 FROM alpine:3.7 as installer
 
 # Install dependencies
-RUN apk -U upgrade && apk add unzip
+RUN apk add --no-cache unzip
 
 ARG XLR_VERSION
 ENV APP_ROOT=/opt
