@@ -13,8 +13,11 @@ RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
     mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
 
-# Augment bin directory of regular install
-COPY resources/bin/*.sh ${APP_HOME}/bin/
+# Add bin/run-in-container.sh
+ADD resources/bin/run-in-container.sh ${APP_HOME}/bin/
+
+# Modify bin/run.sh so that java becomes a child process of dumb-init
+RUN sed -i 's/^\($JAVACMD $XL_RELEASE_SERVER_OPTS\)/exec \1/' ${APP_HOME}/bin/run.sh
 
 # Move and augment conf directory of regular install
 RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
