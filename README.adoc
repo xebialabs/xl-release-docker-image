@@ -1,9 +1,9 @@
 = XL Docker images for XL Release
 
-This repository contains the source code for two flavors of Docker images for XL release:
+This repository contains the source code for two flavors of Docker images for XL Release:
 
-* The regular image, which based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
-* The Red Hat certified image, which is baed on the rhel7-atomic base image
+* The regular image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+* The Red Hat certified image, which is based on the rhel7-atomic base image
 
 = Using the image
 
@@ -74,7 +74,7 @@ $ docker run -d -p 5516:5516 \
 
 == Environment variables
 
-The `xebialabs/xl-release` exposes the following environment variables to change the default setup procedure that runs when a fresh installation is detected:
+The `xebialabs/xl-release` image exposes the following environment variables to change the default setup procedure that runs when a fresh installation is detected:
 
 * `ADMIN_PASSWORD` sets the admin password for a new installation. If this environment variable is not set, a random admin password is generated and printed to the console of the container.
 * `REPOSITORY_KEYSTORE_PASSPHRASE` sets the passphrase of the repository encryption key for a new installation. If this environment variable is not set, a random passphrase is generated and printed to the console of the container.
@@ -108,7 +108,7 @@ In addition to the `conf` directory, the image also contains `/opt/xl-release-se
 
 Just like the `conf` directory, the `/opt/xl-release-server/plugins` directory on the image is empty. The first time that the container is started, the contents of the `/opt/xl-release-server/default-plugins` directory are copied into the `plugins` directory.
 
-Just like with the `conf` directory, if a plugin is already present in a volume mounted on the `plugins` mount point, it is not overwritten. This behavior also recognizes different versions of the same plugin.
+And just like with the `conf` directory, if a plugin is already present in a volume mounted on the `plugins` mount point, it is not overwritten. This behavior also recognizes different versions of the same plugin.
 
 If a volume is provided for the `/opt/xl-release-server/plugins` directory, it can be used to pre-select certain plugins before startup. It also means that you'll have to upgrade the plugins manually, as per the https://docs.xebialabs.com/xl-release/how-to/upgrade-xl-release.html[Upgrade instructions for XL Release].
 
@@ -134,10 +134,10 @@ $ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:v8.1 --t
 To publish the regular image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-release:v8.0
-$ docker push xebialabs/xl-release:v8.0-alpine
-$ docker push xebialabs/xl-release:v8.0.1
-$ docker push xebialabs/xl-release:v8.0.1-alpine
+$ docker push xebialabs/xl-release:v8.1
+$ docker push xebialabs/xl-release:v8.1-alpine
+$ docker push xebialabs/xl-release:v8.1.0
+$ docker push xebialabs/xl-release:v8.1.0-alpine
 ----
 
 == Non-final versions

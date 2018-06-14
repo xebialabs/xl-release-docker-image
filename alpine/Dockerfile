@@ -7,7 +7,7 @@ ARG XLR_VERSION
 ENV APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-release-server
 
-# Install XLR
+# Install XL Release
 ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
 RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
@@ -65,7 +65,7 @@ RUN apk add --no-cache dumb-init pwgen
 ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-release-server
 
-# Copy installed XLR
+# Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
 
 WORKDIR ${APP_HOME}
