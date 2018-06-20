@@ -20,7 +20,7 @@ Run the XL Release container with the following command:
 
 [source,shell]
 ----
-$ docker run -d -p 5516:5516 --name xlr xebialabs/xl-release:8.1.0-rc.2
+$ docker run -d -p 5516:5516 --name xlr xebialabs/xl-release:8.1
 ----
 
 Follow the logs to capture the generated admin password and wait until you see the message "XL Release has started":
@@ -133,7 +133,7 @@ To build the regular, Debian slim-based image:
 $ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1 --tag xebialabs/xl-release:8.1-debian-slim --tag xebialabs/xl-release:8.1.0 --tag xebialabs/xl-release:8.1.0-debian-slim -f debian-slim/Dockerfile .
 ----
 
-To publish the regular image:
+To publish the regular, Debian slim-based image:
 [source,shell]
 ----
 $ docker push xebialabs/xl-release:8.1
@@ -164,7 +164,7 @@ To build the Alpine-based image:
 $ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1-alpine --tag xebialabs/xl-release:8.1.0-alpine -f alpine/Dockerfile .
 ----
 
-To publish the regular image:
+To publish the Alpine-based image:
 [source,shell]
 ----
 $ docker push xebialabs/xl-release:8.1-alpine
