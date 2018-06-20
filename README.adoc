@@ -1,8 +1,9 @@
 = XL Docker images for XL Release
 
-This repository contains the source code for two flavors of Docker images for XL Release:
+This repository contains the source code for three flavors of Docker images for XL Release:
 
-* The regular image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+* The regular image, which is based on Debian (slim) Linux flavor  of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+* An alternative image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
 * The Red Hat certified image, which is based on the rhel7-atomic base image
 
 = Using the image
@@ -123,8 +124,40 @@ The `/opt/xl-release-server/ext` and `/opt/xl-release-server/hotfix` volumes are
 
 = Building and publishing the images
 
+== Debian-based image
+
+To build the regular, Debian slim-based image:
+
+[source,shell]
+----
+$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1 --tag xebialabs/xl-release:8.1-debian-slim --tag xebialabs/xl-release:8.1.0 --tag xebialabs/xl-release:8.1.0-debian-slim -f debian-slim/Dockerfile .
+----
+
+To publish the regular image:
+[source,shell]
+----
+$ docker push xebialabs/xl-release:8.1
+$ docker push xebialabs/xl-release:8.1-debian-slim
+$ docker push xebialabs/xl-release:8.1.0
+$ docker push xebialabs/xl-release:8.1.0-debian-slim
+----
+
+== Non-final versions
+To build non-final versions, use:
+[source,shell]
+----
+$ docker build --build-arg XLR_VERSION=8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2-debian-slim -f debian-slim/Dockerfile .
+----
+
+To publish non-final versions, use:
+[source,shell]
+----
+$ docker push xebialabs/xl-release:8.1.0-rc.2
+$ docker push xebialabs/xl-release:8.1.0-rc.2-debian-slim
+----
+
 == Alpine-based image
-To build the regular, Alpine-based image:
+To build the Alpine-based image:
 
 [source,shell]
 ----
