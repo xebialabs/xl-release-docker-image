@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   xlr:
-    image: xebialabs/xl-release:v8.1.0-rc.2
+    image: xebialabs/xl-release:8.1.0-rc.2
     mem_limit: 4g
     volumes:
       - '${HOME}/xl-release-server/hotfix:/opt/xl-release-server/hotfix:ro'

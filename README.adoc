@@ -19,7 +19,7 @@ Run the XL Release container with the following command:
 
 [source,shell]
 ----
-$ docker run -d -p 5516:5516 --name xlr xebialabs/xl-release:v8.1.0-rc.2
+$ docker run -d -p 5516:5516 --name xlr xebialabs/xl-release:8.1.0-rc.2
 ----
 
 Follow the logs to capture the generated admin password and wait until you see the message "XL Release has started":
@@ -54,7 +54,7 @@ The randomly generated admin password makes it hard to include the XL Release co
 
 [source,shell]
 ----
-$ docker run -d -p 5516:5516 -e ADMIN_PASSWORD=secret --name xlr xebialabs/xl-release:v8.1.0-rc.2
+$ docker run -d -p 5516:5516 -e ADMIN_PASSWORD=secret --name xlr xebialabs/xl-release:8.1.0-rc.2
 ----
 
 === For production usage (with persistence)
@@ -69,7 +69,7 @@ $ docker run -d -p 5516:5516 \
 -v ${HOME}/xl-release-server/conf:/opt/xl-release-server/conf:rw \
 -v ${HOME}/xl-release-server/repository:/opt/xl-release-server/repository:rw \
 -v ${HOME}/xl-release-server/archive:/opt/xl-release-server/archive:rw \
---name xlr xebialabs/xl-release:v8.1.0-rc.2
+--name xlr xebialabs/xl-release:8.1.0-rc.2
 ----
 
 == Environment variables
@@ -128,35 +128,35 @@ To build the regular, Alpine-based image:
 
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:v8.1 --tag xebialabs/xl-release:v8.1-alpine --tag xebialabs/xl-release:v8.1.0 --tag xebialabs/xl-release:v8.1.0-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1 --tag xebialabs/xl-release:8.1-alpine --tag xebialabs/xl-release:8.1.0 --tag xebialabs/xl-release:8.1.0-alpine -f alpine/Dockerfile .
 ----
 
 To publish the regular image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-release:v8.1
-$ docker push xebialabs/xl-release:v8.1-alpine
-$ docker push xebialabs/xl-release:v8.1.0
-$ docker push xebialabs/xl-release:v8.1.0-alpine
+$ docker push xebialabs/xl-release:8.1
+$ docker push xebialabs/xl-release:8.1-alpine
+$ docker push xebialabs/xl-release:8.1.0
+$ docker push xebialabs/xl-release:8.1.0-alpine
 ----
 
 == Non-final versions
 To build non-final versions, use:
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=8.1.0-rc.2 --tag xebialabs/xl-release:v8.1.0-rc.2 --tag xebialabs/xl-release:v8.1.0-rc.2-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLR_VERSION=8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2-alpine -f alpine/Dockerfile .
 ----
 
 To publish non-final versions, use:
 [source,shell]
 ----
-$ docker push xebialabs/xl-release:v8.1.0-rc.2
-$ docker push xebialabs/xl-release:v8.1.0-rc.2-alpine
+$ docker push xebialabs/xl-release:8.1.0-rc.2
+$ docker push xebialabs/xl-release:8.1.0-rc.2-alpine
 ----
 
 == Red Hat certified image
 To build the Red Hat certified image:
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=8.0.1 --tag xebialabs/xl-release:v8.0-rhel --tag xebialabs/xl-release:v8.0.1-rhel -f rhel/Dockerfile buildContext
+$ docker build --build-arg XLR_VERSION=8.0.1 --tag xebialabs/xl-release:8.0-rhel --tag xebialabs/xl-release:8.0.1-rhel -f rhel/Dockerfile buildContext
 ----
