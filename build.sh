@@ -5,7 +5,7 @@
 PUSH=false
 FLAVOR="debian-slim"
 
-while getopts ":u:p:U:P:g:r:v:s:h:f:" opt; do
+while getopts ":u:p:U:P:g:r:v:s:hf:" opt; do
   case ${opt} in
     u ) DL_USER=$OPTARG;;
     p ) DL_PASS=$OPTARG;;
