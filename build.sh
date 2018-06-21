@@ -37,8 +37,14 @@ else
     if [ -f $DIST_DEST ]; then
         echo "Skipping download because file already exists"
     else
+        NEXUSREPO="releases"
+        if [[ $VERSION = *"alpha"* ]]; then
+            NEXUSREPO="alphas"
+        fi
+
         DL_LOCATION_DIST="https://dist.xebialabs.com/customer/xl-release/product/${VERSION}/xl-release-${VERSION}-server.zip"
-        DL_LOCATION_NEXUS="https://nexus.xebialabs.com/nexus/service/local/repositories/releases/content/com/xebialabs/xlrelease/xl-release/${VERSION}/xl-release-${VERSION}-server.zip"
+        DL_LOCATION_NEXUS="https://nexus.xebialabs.com/nexus/service/local/repositories/${NEXUSREPO}/content/com/xebialabs/xlrelease/xl-release/${VERSION}/xl-release-${VERSION}-server.zip"
+
         if [ "$SOURCE" = "nexus" ]; then
             DL_LOCATION=$DL_LOCATION_NEXUS
         else
