@@ -39,7 +39,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'nexus-ci', passwordVariable: 'nexus_pass', usernameVariable: 'nexus_user'),
                                  usernamePassword(credentialsId: 'xldevdocker', passwordVariable: 'docker_pass', usernameVariable: 'docker_user')]) {
 
-                    sh './build.sh -f "${params.flavor}" -h -v "${params.version}" -s nexus -u "${nexus_user}" -p "${nexus_pass}" -U "${docker_user}" -P "${docker_pass}" -g "${params.registry}" -r "${params.repository}"'
+                    sh "./build.sh -f \"${params.flavor}\" -h -v \"${params.version}\" -s nexus -u \"${nexus_user}\" -p \"${nexus_pass}\" -U \"${docker_user}\" -P \"${docker_pass}\" -g \"${params.registry}\" -r \"${params.repository}\""
 
                 }
 
