@@ -3,8 +3,9 @@
 ####### PARSING OPTIONS ################################################################################################
 
 PUSH=false
+FLAVOR="debian-slim"
 
-while getopts ":u:p:U:P:g:r:v:s:h" opt; do
+while getopts ":u:p:U:P:g:r:v:s:h:f:" opt; do
   case ${opt} in
     u ) DL_USER=$OPTARG;;
     p ) DL_PASS=$OPTARG;;
@@ -15,6 +16,7 @@ while getopts ":u:p:U:P:g:r:v:s:h" opt; do
     v ) VERSION=$OPTARG;;
     h ) PUSH=true;;
     s ) SOURCE=$OPTARG;;
+    f ) FLAVOR=$OPTARG;;
     \? ) echo "Invalid option: $OPTARG" 1>&2; exit 1;;
     : ) echo "Invalid option: $OPTARG requires an argument" 1>&2; exit 1;;
   esac
@@ -50,7 +52,8 @@ fi
 
 echo "Product zip located at: ${DIST_DEST}"
 
-docker build --build-arg XLR_VERSION="${VERSION}" --tag "${REGISTRY}/${REPOSITORY}:${VERSION}" -f alpine/Dockerfile .
+echo "Building image with flavor ${FLAVOR}"
+docker build --build-arg XLR_VERSION="${VERSION}" --tag "${REGISTRY}/${REPOSITORY}:${VERSION}" -f "${FLAVOR}/Dockerfile" .
 
 ####### PUSH TO REGISTRY ###############################################################################################
 
