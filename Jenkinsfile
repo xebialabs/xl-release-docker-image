@@ -24,6 +24,9 @@ pipeline {
 
     stages {
         stage('Publish Docker image to XLR docker registry') {
+            when {
+                expression { params.version != '' }
+            }
             agent {
                 node {
                     label 'linux-docker-xlr'
