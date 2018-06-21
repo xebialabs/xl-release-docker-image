@@ -16,7 +16,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'version', defaultValue: false, description: 'Version to tag the docker image')
+        string(name: 'version', description: 'Version to tag the docker image')
         string(name: 'registry', defaultValue: "xl-docker.xebialabs.com", description: 'Registry to push the image to')
         string(name: 'repository', defaultValue: "xl-release", description: 'Repository to push the image to')
     }
