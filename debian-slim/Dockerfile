@@ -59,13 +59,11 @@ LABEL name="xebialabs/xl-release" \
       description="Automate, orchestrate and get visibility into your release pipelines — at enterprise scale" \
       url="https://www.xebialabs.com/xl-release"
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y dumb-init pwgen && \
-    apt-get clean
-
 ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-release-server
+
+ADD resources/tini /tini
+RUN chmod ugo+x /tini
 
 # Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
