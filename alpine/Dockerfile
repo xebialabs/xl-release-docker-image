@@ -78,4 +78,4 @@ EXPOSE 5516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
 # expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-release-server/bin/run-in-container.sh"]
+ENTRYPOINT ["/tini", "/opt/xl-release-server/bin/run-in-container.sh"]

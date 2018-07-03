@@ -47,7 +47,7 @@ RUN chgrp -R 0 ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} && \
     chmod g+x ${APP_HOME}/bin/*.sh
 
-FROM openjdk:8-jdk-slim-stretch
+FROM centos:7
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
 LABEL name="xebialabs/xl-release" \
@@ -64,6 +64,8 @@ ENV APP_HOME=/opt/xl-release-server
 
 ADD resources/tini /tini
 RUN chmod ugo+x /tini
+
+RUN yum update && yum install -y java-1.8.0-openjdk-headless && yum clean all
 
 # Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
