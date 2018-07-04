@@ -62,7 +62,7 @@ LABEL name="xebialabs/xl-release" \
 ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-release-server
 
-ADD resources/tini /tini
+ADD resources/amd64/tini /tini
 RUN chmod ugo+x /tini
 
 RUN yum update && yum install -y java-1.8.0-openjdk-headless && yum clean all

@@ -14,7 +14,7 @@ ARG XLR_VERSION
 ENV APP_ROOT=/opt USER_NAME=xl-deploy USER_UID=10001
 ENV APP_HOME=${APP_ROOT}/xl-release-server
 
-COPY resources/tini /tini
+COPY resources/amd64/tini /tini
 RUN chmod ugo+x /tini
 
 COPY resources/help.md /tmp/
