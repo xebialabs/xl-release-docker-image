@@ -11,11 +11,8 @@ LABEL name="xebialabs/xl-release" \
       url="https://www.xebialabs.com/xl-release"
 
 ARG XLR_VERSION
-ENV APP_ROOT=/opt USER_NAME=xl-deploy USER_UID=10001
+ENV APP_ROOT=/opt/xebialabs USER_UID=10001
 ENV APP_HOME=${APP_ROOT}/xl-release-server
-
-COPY resources/amd64/tini /tini
-RUN chmod ugo+x /tini
 
 COPY resources/help.md /tmp/
 
@@ -40,6 +37,9 @@ ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
 RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
     mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
+
+COPY resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
 
 # Add bin/run-in-container.sh
 ADD resources/bin/run-in-container.sh ${APP_HOME}/bin/
@@ -82,8 +82,8 @@ WORKDIR ${APP_HOME}
 USER 10001
 
 VOLUME ["${APP_HOME}/conf", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugins", "${APP_HOME}/ext", "${APP_HOME}/plugins", "${APP_HOME}/repository"]
-EXPOSE 4516
+EXPOSE 5516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
-# expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/tini", "/opt/xl-release-server/bin/run-in-container.sh"]
+# expanded when using the shell form, but that results in tini running with a PID higher than 1.
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-release-server/bin/run-in-container.sh"]

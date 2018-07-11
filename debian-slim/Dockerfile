@@ -4,8 +4,8 @@ FROM alpine:3.7 as installer
 RUN apk add --no-cache gawk unzip
 
 ARG XLR_VERSION
-ENV APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-release-server
+ENV APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-release-server
 
 # Install XL Release
 ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
@@ -59,11 +59,11 @@ LABEL name="xebialabs/xl-release" \
       description="Automate, orchestrate and get visibility into your release pipelines — at enterprise scale" \
       url="https://www.xebialabs.com/xl-release"
 
-ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-release-server
+ENV USER_UID=10001 APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-release-server
 
-ADD resources/amd64/tini /tini
-RUN chmod ugo+x /tini
+ADD resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
 
 # Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
@@ -78,4 +78,4 @@ EXPOSE 5516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
 # expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/tini", "/opt/xl-release-server/bin/run-in-container.sh"]
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-release-server/bin/run-in-container.sh"]

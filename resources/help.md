@@ -19,35 +19,33 @@ The XL Release product specifically is designed to help users orchestrate comple
 # ENVIRONMENT VARIABLES
 The following environment variables can be set to configure the image for different scenarios
 
-APP_ROOT=/opt/xl-release
-    This environment variable is used as the landing point for all the application data.
+APP_ROOT=/opt/xebialabs
+    This environment variable is used to determine the directory where all application specific code will be copied. Normally there is no need to change this variable.
 
-DATA_DIR=${APP_ROOT}/xlr-data
-    This environment variable is used as the volume name for the persistent data of the embedded database. **Always ensure that this directory is a subdirectory of the APP_ROOT variable**.
+APP_HOME=/${APP_ROOT}/xl-release-server
+    This environment variable is used as the landing point for all the application data. Ensure that this is a subdirectory of the ${APP_ROOT} variable. Normally there is no need to change this variable.
 
-BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap
-    In case on non-ephemeral containers, this environment variable is used at the volume name for the bootstrap configuration files that are shared between containers. **Always ensure that this directory is a subdirectory of the APP_ROOT variable**.
+# VOLUMES
+The following locations can be mounted as volumes to provide either configuration data, and/or persistent storage for application data.
 
-XLR_CLUSTER_MODE=default
-    The clustering mode in which XL Release will run, choose one from `default`, `hot-standby` or `full`.
+${APP_HOME}/conf
+    This directory contains the configuration files and keystores for XL Release. If mounted it is possible to configure (and inject) non-default configuration settings.
 
-XLR_DB_TYPE=h2
-    The type of database that XL Release will connect to, default is to use `h2` embedded running on a volume to persist it's data. Other supported databases are `mysql`, `postgres` and `mssql`.
+${APP_HOME}/hotfix/lib
+    This direcory contains the hotfixes for the libraries used by XL Release. When instructed by XebiaLabs support personnell, you should drop any delivered hotfixes in here.
 
-XLR_REPO_DB_URL=jdbc:h2:file:${DATA_DIR}/xlr-repo
-    The JDBC URL to connect to the "repository" database. The default h2 one uses the data volume defined by the `DATA_DIR` environment variable to persist it's data
+${APP_HOME}/hotfix/plugins
+    This direcory contains the hotfixes for the plugins used by XL Release. When instructed by XebiaLabs support personnell, you should drop any delivered plugin hotfixes in here.
 
-XLR_REPO_DB_USERNAME=sa
-    The JDBC username used to connect to the "repository" database.
+${APP_HOME}/ext
+    This direcory contains the developed (exploded plugins) for XL Release. 
 
-XLR_REPO_DB_PASSWORD=123
-    The JDBC password used to connect to the "repository" database.
+${APP_HOME}/plugins
+    This directory contains the plugins that are running in XL Release.
 
-XLR_ARCHIVE_DB_URL=jdbc:h2:file:${DATA_DIR}/xlr-archive
-    The JDBC URL to connect to the "archive" database. The default h2 one uses the data volume defined by the `DATA_DIR` environment varialbe to persist it's data
+${APP_HOME}/repository
+    This directory contains the embedded repository database for XL Release. Using the configuration injected through the ${APP_HOME}/conf volume, it is possible to configure the used database to a remotely running database engine, instead of using the embedded memory base one.
 
-XLR_ARCHIVE_DB_USERNAME=sa
-    The JDBC username used to connect to the "archive" database.
+# PORTS
+The port that can be exposed by default is `5516`
 
-XLR_ARCHIVE_DB_PASSWORD=123
-    The JDBC password used to connect to the "archive" database.
