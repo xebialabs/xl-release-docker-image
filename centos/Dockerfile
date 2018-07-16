@@ -65,7 +65,9 @@ ENV APP_HOME=${APP_ROOT}/xl-release-server
 ADD resources/amd64/tini ${APP_ROOT}/tini
 RUN chmod ugo+x ${APP_ROOT}/tini
 
-RUN yum update && yum install -y java-1.8.0-openjdk-headless && yum clean all
+RUN yum update -y && \
+    yum install -y java-1.8.0-openjdk-headless && \
+    yum clean all -y
 
 # Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
