@@ -4,79 +4,86 @@ MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 LABEL name="xebialabs/xl-release" \
       maintainer="docker@xebialabs.com" \
       vendor="XebiaLabs" \
-      version="8.0.1" \
+      version="8.1.0" \
       release="1" \
       summary="XL Release" \
       description="Release orchestration" \
-### Required labels above - recommended below
       url="https://www.xebialabs.com/xl-release"
-      # run='docker run -tdi --name ${NAME} ${IMAGE}' \
-      # io.k8s.description="Starter app will do ....." \
-      # io.k8s.display-name="Starter app" \
-      # io.openshift.expose-services="" \
-      # io.openshift.tags="acme,starter"
 
-COPY help.md /tmp/
+ARG XLR_VERSION
+ENV APP_ROOT=/opt/xebialabs USER_UID=10001
+ENV APP_HOME=${APP_ROOT}/xl-release-server
+
+COPY resources/help.md /tmp/
 
 ### add licenses to this directory
-COPY licenses /licenses
+COPY resources/licenses /licenses
 
+# Install dependencies
 RUN INSTALL_PKGS="golang-github-cpuguy83-go-md2man curl hostname" && \
-    microdnf install --enablerepo=rhel-7-server-rpms --enablerepo=rhel-7-server-optional-rpms ${INSTALL_PKGS} && \
+    microdnf install --enablerepo=rhel-7-server-rpms --enablerepo=rhel-7-server-optional-rpms --nodocs ${INSTALL_PKGS} && \
     microdnf update && \
 ### help file markdown to man conversion
     go-md2man -in /tmp/help.md -out /help.1 && \
-### Create application user
-    # useradd -l -u ${USER_UID} -r -g 0 -d ${APP_HOME} -s /sbin/nologin -c "${USER_NAME} application user" ${USER_NAME} && \
-# ### Download gosu
-#     curl -o /usr/local/bin/gosu -sSL https://github.com/tianon/gosu/releases/download/1.10/gosu-i386 && \
-#     chmod ugo+xs /usr/local/bin/gosu && \
-### Clean up
     microdnf clean all
 
-# Install Java
-RUN microdnf install --enablerepo=rhel-7-server-rpms --nodocs unzip java-1.8.0-openjdk java-1.8.0-openjdk-devel && \
+RUN microdnf install --enablerepo=rhel-7-server-rpms --nodocs unzip gawk java-1.8.0-openjdk java-1.8.0-openjdk-devel && \
 ### Set the Java random source
     echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/java/jre/lib/security/java.security && \
     microdnf clean all
 
-# Install XLR
-ARG XLR_VERSION
-ENV JAVA_HOME=/etc/alternatives/jre USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt/xl-release
-ENV APP_HOME=${APP_ROOT}/xlr-server BOOTSTRAP_DIR=${APP_ROOT}/xlr-bootstrap DATA_DIR=${APP_ROOT}/xlr-data
+# Install XL Release
+ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
+RUN mkdir -p ${APP_ROOT} && \
+    unzip /tmp/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
+    mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME}
 
-RUN mkdir ${APP_ROOT}
+COPY resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
 
-COPY xl-release-${XLR_VERSION}-server.zip ${APP_ROOT}
-COPY conf-templates /tmp/templates
-RUN unzip ${APP_ROOT}/xl-release-${XLR_VERSION}-server.zip -d ${APP_ROOT} && \
-    mv ${APP_ROOT}/xl-release-${XLR_VERSION}-server ${APP_HOME} && \
-    mkdir ${BOOTSTRAP_DIR} && \
-    mkdir ${DATA_DIR} && \
-    chgrp -R 0 ${APP_ROOT} && \
+# Add bin/run-in-container.sh
+ADD resources/bin/run-in-container.sh ${APP_HOME}/bin/
+
+# Modify bin/run.sh so that java becomes a child process of dumb-init
+RUN sed -i 's/^\($JAVACMD $XL_RELEASE_SERVER_OPTS\)/exec \1/' ${APP_HOME}/bin/run.sh
+
+# Move and augment conf directory of regular install
+RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
+    mkdir ${APP_HOME}/conf
+COPY resources/default-conf ${APP_HOME}/default-conf
+
+# Modify conf/xlr-wrapper-linux.conf to add node-conf to the classpath and to add container-specific VM options
+RUN gawk '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
+{ if (match($0, /^(wrapper.java.classpath).([0-9]+)=(.*)$/, a)) { printf("%s.%d=%s\n", a[1], (a[2]+1), a[3]) } else \
+  if (/^wrapper.java.additional.1=-Xms1024m$/) { print "wrapper.java.additional.1=-XX:+UnlockExperimentalVMOptions" } else \
+  if (/^wrapper.java.additional.2=-Xmx4096m$/) { print "wrapper.java.additional.2=-XX:+UseCGroupMemoryLimitForHeap" } else \
+  { print $0 }}' ${APP_HOME}/default-conf/xlr-wrapper-linux.conf > /tmp/xlr-wrapper-linux.conf
+RUN mv /tmp/xlr-wrapper-linux.conf ${APP_HOME}/default-conf/xlr-wrapper-linux.conf
+
+# Create node-specific conf directory and add template for node-specific xl-release.conf file
+RUN mkdir ${APP_HOME}/node-conf
+ADD resources/node-conf/xl-release.conf.template ${APP_HOME}/node-conf
+
+# Move plugins directory
+RUN mv ${APP_HOME}/plugins ${APP_HOME}/default-plugins && \
+    mkdir ${APP_HOME}/plugins
+
+# Create empty archive and repository directories
+RUN mkdir ${APP_HOME}/archive ${APP_HOME}/repository
+
+# Set permissions
+RUN chgrp -R 0 ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} && \
-    rm ${APP_ROOT}/xl-release-${XLR_VERSION}-server.zip
-COPY bin/xlr-bootstrapper.sh ${APP_HOME}
-RUN chmod g+x ${APP_HOME}/xlr-bootstrapper.sh && \
-    chgrp 0 ${APP_HOME}/xlr-bootstrapper.sh
+    chmod g+x ${APP_HOME}/bin/*.sh
+
+WORKDIR ${APP_HOME}
 
 # Don't run as root
 USER 10001
-WORKDIR ${APP_HOME}
 
-# plugins, hotfix, ext and conf will be copied from the /xlr-bootstrap by the bootstrapper into the installation
-# repository and archive will be the persistent data layer for the standalone version of XLR
-VOLUME ${BOOTSTRAP_DIR} ${DATA_DIR}
-
-ENV XLR_CLUSTER_MODE default
-ENV XLR_DB_TYPE h2
-ENV XLR_REPO_DB_URL jdbc:h2:file:${DATA_DIR}/xlr-repo
-ENV XLR_REPO_DB_USERNAME sa
-ENV XLR_REPO_DB_PASSWORD 123
-ENV XLR_ARCHIVE_DB_URL jdbc:h2:file:${DATA_DIR}/xlr-archive
-ENV XLR_ARCHIVE_DB_USERNAME sa
-ENV XLR_ARCHIVE_DB_PASSWORD 123
-ENV XLR_METRICS_ENABLED false
-
+VOLUME ["${APP_HOME}/conf", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugins", "${APP_HOME}/ext", "${APP_HOME}/plugins", "${APP_HOME}/repository"]
 EXPOSE 5516
-ENTRYPOINT ${APP_HOME}/xlr-bootstrapper.sh
+
+# Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
+# expanded when using the shell form, but that results in tini running with a PID higher than 1.
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-release-server/bin/run-in-container.sh"]

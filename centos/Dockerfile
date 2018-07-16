@@ -4,8 +4,8 @@ FROM alpine:3.7 as installer
 RUN apk add --no-cache gawk unzip
 
 ARG XLR_VERSION
-ENV APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-release-server
+ENV APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-release-server
 
 # Install XL Release
 ADD resources/xl-release-${XLR_VERSION}-server.zip /tmp
@@ -47,7 +47,7 @@ RUN chgrp -R 0 ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} && \
     chmod g+x ${APP_HOME}/bin/*.sh
 
-FROM openjdk:8-jdk-alpine
+FROM centos:7
 MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
 LABEL name="xebialabs/xl-release" \
@@ -59,11 +59,13 @@ LABEL name="xebialabs/xl-release" \
       description="Automate, orchestrate and get visibility into your release pipelines — at enterprise scale" \
       url="https://www.xebialabs.com/xl-release"
 
-# Install dependencies
-RUN apk add --no-cache dumb-init pwgen
+ENV USER_UID=10001 APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-release-server
 
-ENV USER_NAME=xl-release USER_UID=10001 APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-release-server
+ADD resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
+
+RUN yum update && yum install -y java-1.8.0-openjdk-headless && yum clean all
 
 # Copy installed XL Release
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
@@ -77,5 +79,5 @@ VOLUME ["${APP_HOME}/archive", "${APP_HOME}/conf", "${APP_HOME}/hotfix", "${APP_
 EXPOSE 5516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
-# expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-release-server/bin/run-in-container.sh"]
+# expanded when using the shell form, but that results in tini running with a PID higher than 1.
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-release-server/bin/run-in-container.sh"]
