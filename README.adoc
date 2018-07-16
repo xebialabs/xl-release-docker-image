@@ -3,124 +3,14 @@
 This repository contains the source code for three flavors of Docker images for XL Release:
 
 * The regular image, which is based on Debian (slim) Linux flavor  of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
-* An alternative image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
-* The Red Hat certified image, which is based on the rhel7-atomic base image
+1. An alternative image, which is based on the https://hub.docker.com/_/openjdk/[CentOS 7 base image] and has OpenJDK 1.8 installed
+1. The Red Hat-certified image, which is based on the registry.access.redhat.com/rhel7/rhel-atomic[Red Hat Enterprise Linux Atomic 7 base image] and has OpenJDK 1.8 installed
 
-= Using the image
+This document only describes how to build these images. For user documentation, please refer to the following packages from the XebiaLabs documentation site:
 
-The Docker image for XL Release behaves as closely as possible to the existing installation ZIP of XL Release to ensure that existing setup, upgrade and operations procedure remain valid.
-
-The directory `/opt/xl-release-server` contains an extracted installation setup, augmented with a number of directories that will be discussed below.
-
-== Running the container
-
-=== For demos and simple trial usage (no persistence)
-
-Run the XL Release container with the following command:
-
-[source,shell]
-----
-$ docker run -d -p 5516:5516 --name xlr xebialabs/xl-release:8.1
-----
-
-Follow the logs to capture the generated admin password and wait until you see the message "XL Release has started":
-
-[source,shell]
-----
-$ docker logs -f xlr
-----
-
-
-Stop the XL Release container:
-
-[source,shell]
-----
-$ docker stop xlr
-----
-
-
-Start the XL Release container:
-
-[source,shell]
-----
-$ docker start xlr
-----
-
-Even though no volumes have been defined, the container does keep state between stopping it and then starting it again. For production setups, do define volumes and/or configure XL Release to store its state in an external database.
-
-
-=== For automated testing purposes (known admin password)
-
-The randomly generated admin password makes it hard to include the XL Release container in an automated tests or any other use case that depends on knowing the admin password. For such use cases, the `ADMIN_PASSWORD` environment variable can be set:
-
-[source,shell]
-----
-$ docker run -d -p 5516:5516 -e ADMIN_PASSWORD=secret --name xlr xebialabs/xl-release:8.1.0-rc.2
-----
-
-=== For production usage (with persistence)
-
-The previous two set-ups did not persist the configuration and the repository and archive data across container runs, for example when starting a new container with a newer version of the XL Release image.
-
-To ensure persistence when reconfiguring , volumes should be mounted at the `conf`, `repository` and `archive` mount points:
-
-[source,shell]
-----
-$ docker run -d -p 5516:5516 \
--v ${HOME}/xl-release-server/conf:/opt/xl-release-server/conf:rw \
--v ${HOME}/xl-release-server/repository:/opt/xl-release-server/repository:rw \
--v ${HOME}/xl-release-server/archive:/opt/xl-release-server/archive:rw \
---name xlr xebialabs/xl-release:8.1.0-rc.2
-----
-
-== Environment variables
-
-The `xebialabs/xl-release` image exposes the following environment variables to change the default setup procedure that runs when a fresh installation is detected:
-
-* `ADMIN_PASSWORD` sets the admin password for a new installation. If this environment variable is not set, a random admin password is generated and printed to the console of the container.
-* `REPOSITORY_KEYSTORE_PASSPHRASE` sets the passphrase of the repository encryption key for a new installation. If this environment variable is not set, a random passphrase is generated and printed to the console of the container.
-
-== Ports
-
-The `xebialabs/xl-release` image exposes port 5516 over which the XL Release user interface and REST API are served.
-
-== Volumes
-
-The `xebialabs/xl-release` image exposes the following directories as mount points:
-
-* `/opt/xl-release-server/archive`
-* `/opt/xl-release-server/conf`
-* `/opt/xl-release-server/ext`
-* `/opt/xl-release-server/hotfix`
-* `/opt/xl-release-server/plugins`
-* `/opt/xl-release-server/repository`
-
-Providing volumes for these mount points is optional, but does guarantee persistence across container runs. The sections below will describe how the mountpoints are handled.
-
-=== Configuration (`conf`)
-
-The `/opt/xl-release-server/conf` on the image is empty. The first time that the container is started, the contents of the `/opt/xl-release-server/default-conf` directory are copied into the `conf` directory. The files in the `default-conf` are similar to those in a regular XL Release installation ZIP, except that they have been tweaked for XL Release running in a container.
-
-If a volume is provided for the `/opt/xl-release-server/conf` mount point, the configuration (including the admin password, the product license) is persisted across container runs. Also, if any files are present on the volume the first time that the container is started, they will not be overwritten by the files from the `default-conf` directory. This allows one to set configurations like the `logback.xml` ahead of time.
-
-In addition to the `conf` directory, the image also contains `/opt/xl-release-server/node-conf` directory. This directory contains a `xl-release.conf` file that contains two properties: `xl.cluster.node.id` and `xl.cluster.node.hostname`. Every time the container is started, the IP address of the container is stored in these properties. This configuration file overrides the values in the `/opt/xl-release-server/conf/xl-release.conf` configuration file and can be used to configure XL Release in cluster mode.
-
-=== Plugins (`plugins`)
-
-Just like the `conf` directory, the `/opt/xl-release-server/plugins` directory on the image is empty. The first time that the container is started, the contents of the `/opt/xl-release-server/default-plugins` directory are copied into the `plugins` directory.
-
-And just like with the `conf` directory, if a plugin is already present in a volume mounted on the `plugins` mount point, it is not overwritten. This behavior also recognizes different versions of the same plugin.
-
-If a volume is provided for the `/opt/xl-release-server/plugins` directory, it can be used to pre-select certain plugins before startup. It also means that you'll have to upgrade the plugins manually, as per the https://docs.xebialabs.com/xl-release/how-to/upgrade-xl-release.html[Upgrade instructions for XL Release].
-
-=== Data (`repository` and `archive`)
-
-In a default setup, where the embedded H2 and Derby databases are used to persist the repository and the archive data respectively, those database are stored in the `/opt/xl-release-server/repository` and `/opt/xl-release-server/archive` directories. Provide a mount point for these volumes to ensure that the repository and archive data are preserved across container runs.
-
-=== Customizations and hotfixes (`ext` and `hotfix`)
-
-The `/opt/xl-release-server/ext` and `/opt/xl-release-server/hotfix` volumes are provided to allow for customizations such as https://docs.xebialabs.com/xl-release/how-to/create-custom-task-types.html[custom tasks] and to install hotfixes.
-
+* https://docs.xebialabs.com/xl-release/how-to/use-the-xl-deploy-docker-images.html[Using the XL Release Docker image]
+* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.markdown[Running the XebiaLabs Docker images with Docker Compose]
+* https://docs.xebialabs.com/xl-release/concept/docker-images-for-xl-deploy.html[Reference documentation for the XL Release Docker image]
 
 = Building and publishing the images
 
@@ -142,51 +32,27 @@ $ docker push xebialabs/xl-release:8.1.0
 $ docker push xebialabs/xl-release:8.1.0-debian-slim
 ----
 
-== Non-final versions
-To build non-final versions, use:
-[source,shell]
-----
-$ docker build --build-arg XLR_VERSION=8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2-debian-slim -f debian-slim/Dockerfile .
-----
+== CentOS-based image
 
-To publish non-final versions, use:
-[source,shell]
-----
-$ docker push xebialabs/xl-release:8.1.0-rc.2
-$ docker push xebialabs/xl-release:8.1.0-rc.2-debian-slim
-----
-
-== Alpine-based image
-To build the Alpine-based image:
+To build the alternative, CentOS-based image:
 
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1-alpine --tag xebialabs/xl-release:8.1.0-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1-centos --tag xebialabs/xl-release:8.1.0-centos -f centos/Dockerfile .
 ----
 
-To publish the Alpine-based image:
+To publish the alternative, CentOS-based image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-release:8.1-alpine
-$ docker push xebialabs/xl-release:8.1.0-alpine
-----
-
-== Non-final versions
-To build non-final versions, use:
-[source,shell]
-----
-$ docker build --build-arg XLR_VERSION=8.1.0-rc.2 --tag xebialabs/xl-release:8.1.0-rc.2-alpine -f alpine/Dockerfile .
-----
-
-To publish non-final versions, use:
-[source,shell]
-----
-$ docker push xebialabs/xl-release:8.1.0-rc.2-alpine
+$ docker push xebialabs/xl-release:8.1-centos
+$ docker push xebialabs/xl-release:8.1.0-centos
 ----
 
 == Red Hat certified image
+
 To build the Red Hat certified image:
+
 [source,shell]
 ----
-$ docker build --build-arg XLR_VERSION=8.0.1 --tag xebialabs/xl-release:8.0-rhel --tag xebialabs/xl-release:8.0.1-rhel -f rhel/Dockerfile buildContext
+$ docker build --build-arg XLR_VERSION=8.1.0 --tag xebialabs/xl-release:8.1-rhel --tag xebialabs/xl-release:8.1.0-rhel -f rhel/Dockerfile buildContext
 ----
