@@ -8,9 +8,9 @@ This repository contains the source code for three flavors of Docker images for 
 
 This document only describes how to build these images. For user documentation, please refer to the following packages from the XebiaLabs documentation site:
 
-* https://docs.xebialabs.com/xl-release/how-to/use-the-xl-deploy-docker-images.html[Using the XL Release Docker image]
-* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.markdown[Running the XebiaLabs Docker images with Docker Compose]
-* https://docs.xebialabs.com/xl-release/concept/docker-images-for-xl-deploy.html[Reference documentation for the XL Release Docker image]
+* https://docs.xebialabs.com/xl-release/how-to/use-the-xl-release-docker-images.html[Using the XL Release Docker image]
+* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.html[Running the XebiaLabs Docker images with Docker Compose]
+* https://docs.xebialabs.com/xl-release/concept/docker-images-for-xl-release.html[Reference documentation for the XL Release Docker image]
 
 = Building and publishing the images
 
