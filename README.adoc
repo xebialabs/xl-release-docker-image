@@ -15,7 +15,7 @@ This repository contains the source code for three flavors of Docker images for 
 1. An alternative image, which is based on the https://hub.docker.com/_/openjdk/[CentOS 7 base image] and has OpenJDK 1.8 installed
 1. The Red Hat-certified image, which is based on the registry.access.redhat.com/rhel7/rhel-atomic[Red Hat Enterprise Linux Atomic 7 base image] and has OpenJDK 1.8 installed
 
-This document only describes how to build these images. For user documentation, please refer to the following packages from the XebiaLabs documentation site:
+This document only describes how to build these images. For user documentation, please refer to the following pages from the XebiaLabs documentation site:
 
 * https://docs.xebialabs.com/xl-release/how-to/use-the-xl-release-docker-images.html[Using the XL Release Docker image]
 * https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.html[Running the XebiaLabs Docker images with Docker Compose]
